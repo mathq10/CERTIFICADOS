@@ -1,0 +1,145 @@
+1 -
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+class Armazem:
+    def __init__(self):
+        self.vendas = pd.DataFrame(columns=["Mercadoria", "Quantidade", "Preco"])
+
+    def menu(self):
+        while True:
+            print("Menu Principal:")
+            print("1. Registrar Venda")
+            print("2. Calcular Faturamento")
+            print("3. Imprimir Gráfico")
+            print("4. Sair")
+            opcao = input("Escolha uma opção: ")
+
+            if opcao == "1":
+                self.registrar_venda()
+            elif opcao == "2":
+                self.calcular_faturamento()
+            elif opcao == "3":
+                self.imprimir_grafico()
+            elif opcao == "4":
+                print("Encerrando o programa.")
+                break
+            else:
+                print("Opção inválida. Tente novamente.")
+
+    def registrar_venda(self):
+        mercadoria = int(input("Digite o número da mercadoria (1 a 100): "))
+        quantidade = int(input("Digite a quantidade vendida: "))
+        preco = float(input("Digite o preço da mercadoria: "))
+
+        nova_venda = pd.DataFrame({"Mercadoria": [mercadoria], "Quantidade": [quantidade], "Preco": [preco]})
+        self.vendas = pd.concat([self.vendas, nova_venda], ignore_index=True)
+
+        print("Venda registrada com sucesso.")
+
+    def calcular_faturamento(self):
+        self.vendas["Faturamento"] = self.vendas["Quantidade"] * self.vendas["Preco"]
+        faturamento_total = self.vendas["Faturamento"].sum()
+        media_precos = np.mean(self.vendas["Preco"])  # Exemplo de uso do numpy
+        percentuais = (self.vendas.groupby("Mercadoria")["Faturamento"].sum() / faturamento_total) * 100
+
+        print("Faturamento Mensal:")
+        print(self.vendas)
+        print("Faturamento Total: R$", faturamento_total)
+        print("Média de Preços: R$", media_precos)
+        print("Percentuais de vendas por mercadoria:")
+        print(percentuais)
+
+        self.vendas.to_csv("vendas.csv", index=False)
+        print("Dados das vendas foram salvos em 'vendas.csv'.")
+
+    def imprimir_grafico(self):
+        self.vendas["Quantidade"] = pd.to_numeric(self.vendas["Quantidade"])  # Converte a coluna para tipo numérico
+        top5 = self.vendas.nlargest(5, "Quantidade")
+        mercadorias = top5["Mercadoria"]
+        quantidades = top5["Quantidade"]
+
+        plt.bar(mercadorias, quantidades)
+        plt.xlabel("Mercadorias")
+        plt.ylabel("Quantidade Vendida")
+        plt.title("Top 5 Mercadorias Mais Vendidas")
+        plt.show()
+
+
+if __name__ == "__main__":
+    armazem = Armazem()
+    armazem.menu()
+
+
+
+
+2 -
+
+import pandas as pd
+
+class FolhaPagamento:
+    def __init__(self):
+        self.funcionarios = pd.DataFrame(columns=["Nome", "Cargo", "Salario", "HorasTrabalhadas", "DescontoIR"])
+
+    def menu(self):
+        while True:
+            print("Menu Principal:")
+            print("1. Cadastrar Funcionário")
+            print("2. Calcular Descontos de Imposto de Renda")
+            print("3. Imprimir Relatório")
+            print("4. Sair")
+            opcao = input("Escolha uma opção: ")
+
+            if opcao == "1":
+                self.cadastrar_funcionario()
+            elif opcao == "2":
+                self.calcular_descontos_ir()
+            elif opcao == "3":
+                self.imprimir_relatorio()
+            elif opcao == "4":
+                print("Encerrando o programa.")
+                break
+            else:
+                print("Opção inválida. Tente novamente.")
+
+    def cadastrar_funcionario(self):
+        nome = input("Nome do funcionário: ")
+        cargo = input("Cargo: ")
+        salario = float(input("Salário: "))
+        horas_trabalhadas = int(input("Horas trabalhadas: "))
+
+        # Adicione o funcionário ao DataFrame
+        novo_funcionario = pd.DataFrame({"Nome": [nome], "Cargo": [cargo], "Salario": [salario], "HorasTrabalhadas": [horas_trabalhadas], "DescontoIR": [0]})
+        self.funcionarios = pd.concat([self.funcionarios, novo_funcionario], ignore_index=True)
+        print("Funcionário cadastrado com sucesso.")
+
+    def calcular_descontos_ir(self):
+        for index, funcionario in self.funcionarios.iterrows():
+            salario = funcionario["Salario"]
+            if salario <= 1500:
+                self.funcionarios.at[index, "DescontoIR"] = 0
+            elif salario <= 3000:
+                self.funcionarios.at[index, "DescontoIR"] = salario * 0.15
+            elif salario <= 5000:
+                self.funcionarios.at[index, "DescontoIR"] = salario * 0.2
+            else:
+                self.funcionarios.at[index, "DescontoIR"] = salario * 0.27
+
+    def imprimir_relatorio(self):
+        total_descontos_ir = self.funcionarios["DescontoIR"].sum()
+        total_salario_bruto = self.funcionarios["Salario"].sum()
+        total_salario_liquido = total_salario_bruto - total_descontos_ir
+
+        print("Relatório de Folha de Pagamento:")
+        print(self.funcionarios)
+        print("Total de Descontos IR: R$", total_descontos_ir)
+        print("Total de Salário Bruto: R$", total_salario_bruto)
+        print("Total de Salário Líquido: R$", total_salario_liquido)
+
+if __name__ == "__main__":
+    folha_pagamento = FolhaPagamento()
+    folha_pagamento.menu()
+
